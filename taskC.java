@@ -11,6 +11,12 @@ import java.io.IOException;
 
 import javax.naming.Context;
 
+//compile and run instrutions I used: 
+// javac -classpath $(hadoop classpath) taskC.java
+// jar cf taskc.jar taskC*.class
+// rm -rf ~/shared_folder/project1/output -- hadoop won't override I don't think 
+// hadoop jar taskc.jar taskC
+
 public class taskC {
     
     public static class taskCMapper extends Mapper<Object, Text, Text, Text>{
