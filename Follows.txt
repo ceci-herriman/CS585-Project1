@@ -1,0 +1,40 @@
+1,100,79,155673,Best friends in college
+2,56,37,226021,Close family friend
+3,84,60,513748,Best friends in college
+4,79,24,477096,Close family friend
+5,5,4,680958,Close family friend
+6,61,29,349682,Best friends in college
+7,36,87,363059,Close family friend
+8,39,48,354261,Professional celebrity interest
+9,5,10,426836,Close family friend
+10,35,7,869057,Close family friend
+11,98,51,994855,Close family friend
+12,62,52,281694,Professional celebrity interest
+13,21,99,142485,Best friends in college
+14,7,36,765190,Best friends in college
+15,21,11,66205,Best friends in college
+16,65,81,159521,Best friends in high school
+17,73,46,284784,Professional celebrity interest
+18,49,70,390081,Professional celebrity interest
+19,51,1,420476,Best friends in college
+20,86,11,879456,Best friends in high school
+21,2,14,706139,Best friends in college
+22,40,56,130055,Best friends in college
+23,87,77,333294,Professional celebrity interest
+24,27,32,706158,Best friends in high school
+25,100,19,551809,Best friends in high school
+26,48,98,618069,Best friends in high school
+27,27,5,227735,Professional celebrity interest
+28,45,7,889258,Best friends in high school
+29,86,1,735080,Best friends in college
+30,11,44,867529,Professional celebrity interest
+31,94,62,679908,Best friends in high school
+32,92,74,91325,Close family friend
+33,73,91,662363,Best friends in college
+34,68,95,939087,Close family friend
+35,8,73,777623,Best friends in college
+36,38,78,569816,Best friends in high school
+37,64,6,794139,Professional celebrity interest
+38,13,34,29329,Close family friend
+39,60,16,862893,Close family friend
+40,2,88,974848,Best friends in high school

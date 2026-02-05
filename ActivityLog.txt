@@ -1,0 +1,100 @@
+1,75,94,Viewed page, left a note,529996
+2,59,46,Viewed page, left a note,194380
+3,36,23,Viewed page, left a note,793306
+4,3,29,Viewed page, liked and commented on post,558554
+5,26,95,Viewed page, left a note,866234
+6,18,37,Viewed page, left a note,867564
+7,53,11,Just viewing the page,680592
+8,88,39,Viewed page, left a note,562866
+9,86,35,Viewed page, left a note,701656
+10,8,40,Viewed page, followed user,223913
+11,61,73,Viewed page, liked and commented on post,424172
+12,48,97,Viewed page, left a note,943323
+13,78,42,Viewed page, left a note,825962
+14,20,70,Just viewing the page,440060
+15,86,15,Viewed page, followed user,440587
+16,33,30,Just viewing the page,41030
+17,41,6,Just viewing the page,942847
+18,18,9,Viewed page, left a note,171353
+19,6,49,Viewed page, left a note,226406
+20,65,36,Viewed page, liked and commented on post,809597
+21,98,39,Just viewing the page,176637
+22,48,53,Viewed page, followed user,46036
+23,69,10,Just viewing the page,919830
+24,31,34,Just viewing the page,706281
+25,65,59,Viewed page, left a note,966999
+26,1,84,Viewed page, left a note,712319
+27,7,64,Viewed page, followed user,65630
+28,3,55,Just viewing the page,575696
+29,63,18,Viewed page, followed user,239659
+30,98,87,Viewed page, liked and commented on post,659618
+31,82,87,Viewed page, followed user,276512
+32,81,22,Viewed page, followed user,549995
+33,1,73,Viewed page, followed user,371423
+34,58,87,Just viewing the page,772616
+35,44,4,Viewed page, followed user,126001
+36,53,100,Viewed page, followed user,6961
+37,97,57,Viewed page, followed user,284907
+38,25,10,Viewed page, liked and commented on post,794107
+39,42,74,Viewed page, liked and commented on post,553658
+40,87,97,Viewed page, liked and commented on post,141456
+41,98,18,Viewed page, followed user,516212
+42,74,94,Just viewing the page,115732
+43,41,68,Just viewing the page,576847
+44,19,13,Viewed page, left a note,318582
+45,13,86,Viewed page, liked and commented on post,76915
+46,1,36,Viewed page, liked and commented on post,270353
+47,31,39,Viewed page, liked and commented on post,585710
+48,68,90,Viewed page, liked and commented on post,68398
+49,72,31,Viewed page, followed user,672842
+50,47,88,Viewed page, left a note,942450
+51,90,21,Viewed page, liked and commented on post,194045
+52,39,36,Viewed page, liked and commented on post,190330
+53,57,46,Viewed page, liked and commented on post,159412
+54,97,8,Viewed page, liked and commented on post,57475
+55,89,22,Viewed page, followed user,216784
+56,55,13,Viewed page, followed user,596578
+57,21,59,Viewed page, left a note,194796
+58,96,13,Viewed page, followed user,367434
+59,18,20,Viewed page, liked and commented on post,18874
+60,30,27,Viewed page, left a note,691493
+61,62,11,Just viewing the page,952592
+62,2,98,Just viewing the page,473537
+63,85,89,Viewed page, liked and commented on post,197209
+64,59,76,Viewed page, liked and commented on post,128640
+65,60,62,Viewed page, left a note,353972
+66,95,54,Just viewing the page,518238
+67,89,22,Viewed page, liked and commented on post,199993
+68,96,66,Viewed page, left a note,880515
+69,85,79,Just viewing the page,501465
+70,16,41,Viewed page, followed user,5356
+71,5,75,Just viewing the page,811188
+72,53,61,Viewed page, left a note,391076
+73,54,6,Just viewing the page,949153
+74,36,1,Viewed page, liked and commented on post,162628
+75,54,47,Viewed page, liked and commented on post,777789
+76,88,76,Just viewing the page,869639
+77,63,61,Viewed page, liked and commented on post,471675
+78,67,85,Viewed page, followed user,516846
+79,68,61,Just viewing the page,98175
+80,69,13,Viewed page, followed user,25741
+81,48,18,Viewed page, followed user,619705
+82,8,33,Viewed page, left a note,539846
+83,97,9,Viewed page, followed user,71634
+84,80,95,Viewed page, left a note,253639
+85,16,13,Viewed page, followed user,645017
+86,100,55,Viewed page, followed user,337912
+87,31,84,Viewed page, followed user,805458
+88,11,55,Viewed page, left a note,552815
+89,79,92,Viewed page, liked and commented on post,903938
+90,91,86,Viewed page, left a note,800272
+91,72,80,Just viewing the page,695053
+92,63,89,Just viewing the page,656576
+93,49,93,Viewed page, followed user,396955
+94,96,15,Viewed page, followed user,567823
+95,14,95,Viewed page, followed user,584662
+96,78,9,Viewed page, left a note,121497
+97,94,87,Viewed page, liked and commented on post,683596
+98,90,64,Just viewing the page,47728
+99,94,11,Viewed page, left a note,414609
+100,89,25,Viewed page, left a note,316294
