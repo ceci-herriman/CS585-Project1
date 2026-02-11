@@ -11,13 +11,18 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 /*
- * TaskG:
- * Identify outdated CircleNetPages (no activity in the last 90 days)
- * Output: Id,NickName
- */
-public class TaskG {
+scp -P 14226 C:/Users/op902/CS585-Project1/taskG.java ds503@localhost:~/
 
-    /* -------------------- MAPPER -------------------- */
+compile and run instrutions I used:
+javac -classpath $(hadoop classpath) taskG.java
+jar cf taskg.jar taskG*.class
+rm -rf ~/shared_folder/project1/taskG/output
+hadoop jar taskg.jar taskG
+
+cat ~/shared_folder/project1/taskG/output/part-r-00000
+*/
+public class taskG {
+    // Mapper
     public static class ActivityMapper
             extends Mapper<LongWritable, Text, IntWritable, IntWritable> {
 
@@ -29,94 +34,100 @@ public class TaskG {
                 throws IOException, InterruptedException {
 
             String[] fields = value.toString().split(",");
-            if(fields.length >= 5) {
+            if (fields.length >= 5) {
                 try {
                     int byWho = Integer.parseInt(fields[1].trim());
                     int activityTime = Integer.parseInt(fields[4].trim());
-                    userId.set(byWho);
-                    time.set(activityTime);
-                    context.write(userId, time);
-                } catch(NumberFormatException e){
-                    // skip invalid lines
+
+                    if (activityTime >= 24 * 90) { // 24 hours * 90 days
+                        userId.set(byWho);
+                        time.set(activityTime);
+                        context.write(userId, time);
+                    }
+                } catch (NumberFormatException e) {
+                    // skip bad tuples
                 }
             }
         }
     }
 
-    /* -------------------- REDUCER -------------------- */
-    public static class OutdatedReducer
+    // Reducer
+    public static class RecentUserReducer
             extends Reducer<IntWritable, IntWritable, Text, NullWritable> {
 
-        private Map<Integer,String> pageInfo = new HashMap<>();
-        private int maxTime = 0;
+        private Map<Integer, String> userInfo = new HashMap<>();
 
         @Override
         protected void setup(Context context) throws IOException {
-            // Load CircleNetPage.txt for Id -> NickName mapping
-            BufferedReader br = new BufferedReader(new FileReader("CircleNetPage.txt"));
+            // Load CircleNetPage.txt
+            BufferedReader br = new BufferedReader(
+                    new FileReader("CircleNetPage.txt")
+            );
             String line;
-            while((line = br.readLine()) != null){
+            while ((line = br.readLine()) != null) {
                 String[] f = line.split(",");
-                if(f.length >=2){
-                    pageInfo.put(Integer.parseInt(f[0].trim()), f[1].trim());
+                if (f.length >= 2) {
+                    userInfo.put(
+                            Integer.parseInt(f[0].trim()),
+                            f[1].trim()
+                    );
                 }
             }
             br.close();
         }
 
         @Override
-        protected void reduce(IntWritable key, Iterable<IntWritable> values, Context context)
+        protected void reduce(IntWritable key, Iterable<IntWritable> values,
+                              Context context)
                 throws IOException, InterruptedException {
 
-            int lastActivity = 0;
-            for(IntWritable v: values){
-                if(v.get() > lastActivity) lastActivity = v.get();
+            // If reducer is called, user has activity >= threshold
+            String nickname = userInfo.get(key.get());
+            if (nickname != null) {
+                context.write(
+                        new Text(key.get() + "," + nickname),
+                        NullWritable.get()
+                );
             }
-
-            // Keep track of global maxTime
-            if(lastActivity > maxTime) maxTime = lastActivity;
-
-            // Store lastActivity for user for later cleanup
-            context.getCounter("TaskG","MAXTIME").setValue(Math.max(context.getCounter("TaskG","MAXTIME").getValue(), lastActivity));
-            context.write(new Text(key.get() + "," + lastActivity), NullWritable.get());
-        }
-
-        @Override
-        protected void cleanup(Context context) throws IOException, InterruptedException {
-            // We'll do filtering in the same reducer pass below
-            // Alternative: if dataset is small, read back lastActivity from cleanup or do a second job
-            // For simplicity, assume maxTime known in advance or set manually
         }
     }
 
-    /* -------------------- DRIVER -------------------- */
+    // Driver
     public static void main(String[] args)
             throws Exception {
 
+        // 1. create a job object
         Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "Outdated CircleNetPages");
+        Job job = Job.getInstance(conf, "Get Recent CircleNetPages");
 
-        // 1. Set jar
-        job.setJarByClass(TaskG.class);
+        // 2. map the class
+        job.setJarByClass(taskG.class);
 
-        // 2. Mapper and Reducer
+        // 3. both the mapper class and the reducer class
         job.setMapperClass(ActivityMapper.class);
-        job.setReducerClass(OutdatedReducer.class);
+        job.setReducerClass(RecentUserReducer.class);
         job.setNumReduceTasks(1);
 
-        // 3. Map output types
+        // 4. set up the output key value data type class
         job.setMapOutputKeyClass(IntWritable.class);
         job.setMapOutputValueClass(IntWritable.class);
 
-        // 4. Output types
+        // 5. set up the final output key value data type class (It doesn't have to be the result of a reducer.)
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(NullWritable.class);
 
-        // 5. Input and output paths
-        FileInputFormat.setInputPaths(job, new Path("file:///home/ds503/ActivityLog.txt"));
-        FileOutputFormat.setOutputPath(job, new Path("file:///home/ds503/shared_folder/project1/taskG/output"));
+        // 6. Specify the input and output path
+        FileInputFormat.setInputPaths(
+                job,
+                new Path("file:///home/ds503/ActivityLog.txt")
+        );
 
-        // 6. Submit job
+        FileOutputFormat.setOutputPath(
+                job,
+                new Path("file:///home/ds503/shared_folder/project1/taskG/output")
+        );
+
+        // 7. submit the job
         boolean result = job.waitForCompletion(true);
 
         System.exit(result ? 0 : 1);
