@@ -10,6 +10,8 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
+//Return IDs and nicknames of persons that have not accessed CircleNet for 90 days 
+
 /*
 scp -P 14226 C:/Users/op902/CS585-Project1/taskG.java ds503@localhost:~/
 
@@ -22,7 +24,8 @@ hadoop jar taskg.jar taskG
 cat ~/shared_folder/project1/taskG/output/part-r-00000
 */
 public class taskG {
-    // Mapper
+    // Mapper (Simple)
+    /*
     public static class ActivityMapper
             extends Mapper<LongWritable, Text, IntWritable, IntWritable> {
 
@@ -49,7 +52,44 @@ public class taskG {
                 }
             }
         }
+    }*/
+
+   public static class ActivityMapper
+        extends Mapper<LongWritable, Text, IntWritable, NullWritable> {
+
+    private Set<Integer> activeUsers = new HashSet<>();
+    private IntWritable userId = new IntWritable();
+
+    @Override
+    protected void map(LongWritable key, Text value, Context context)
+            throws IOException, InterruptedException {
+
+        String[] fields = value.toString().split(",");
+        if (fields.length >= 5) {
+            try {
+                int byWho = Integer.parseInt(fields[1].trim());
+                int activityTime = Integer.parseInt(fields[4].trim());
+
+                if (activityTime >= 24 * 90) {
+                    activeUsers.add(byWho);
+                }
+            } catch (NumberFormatException e) {
+                // skip bad tuples
+            }
+        }
     }
+
+    @Override
+    protected void cleanup(Context context)
+            throws IOException, InterruptedException {
+
+        for (Integer uid : activeUsers) {
+            userId.set(uid);
+            context.write(userId, NullWritable.get());
+        }
+    }
+}
+
 
     // Reducer
     public static class RecentUserReducer
@@ -109,8 +149,15 @@ public class taskG {
         job.setNumReduceTasks(1);
 
         // 4. set up the output key value data type class
+        
+        /*Simple Mapper
         job.setMapOutputKeyClass(IntWritable.class);
         job.setMapOutputValueClass(IntWritable.class);
+        */
+        
+        job.setMapOutputKeyClass(IntWritable.class);
+        job.setMapOutputValueClass(NullWritable.class);
+
 
         // 5. set up the final output key value data type class (It doesn't have to be the result of a reducer.)
         job.setOutputKeyClass(Text.class);

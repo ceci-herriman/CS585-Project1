@@ -46,8 +46,93 @@ public class taskF {
         }
     }
 
-    // Reducer
-    public static class AboveAverageReducer
+    // Combiner
+public static class SumCombiner
+    extends Reducer<IntWritable, IntWritable, IntWritable, IntWritable> {
+
+    @Override
+    protected void reduce(IntWritable key, Iterable<IntWritable> values,
+                          Context context)
+        throws IOException, InterruptedException {
+
+        int sum = 0;
+        for (IntWritable v : values) {
+            sum += v.get();
+        }
+        context.write(key, new IntWritable(sum));
+    }
+}
+
+    // Reducer (Optimized)
+    // Reducer: computes global average and outputs owners above average
+// Reducer: computes global average and outputs owners above average
+public static class AboveAverageReducer
+    extends Reducer<IntWritable, IntWritable, Text, IntWritable> {
+
+    private Map<Integer, Integer> counts = new HashMap<>();
+    private int totalFollowers = 0;
+    private int totalOwners = 0;
+    private Map<Integer, String> ownerInfo = new HashMap<>();
+
+    @Override
+    protected void setup(Context context)
+        throws IOException, InterruptedException {
+
+        // Load CircleNetPage.txt from Distributed Cache
+        BufferedReader br =
+            new BufferedReader(new FileReader("CircleNetPage.txt"));
+
+        String line;
+        while ((line = br.readLine()) != null) {
+            String[] f = line.split(",");
+            if (f.length >= 3) {
+                ownerInfo.put(
+                    Integer.parseInt(f[0].trim()),
+                    f[1].trim() + "," + f[2].trim()
+                );
+            }
+        }
+        br.close();
+    }
+
+    @Override
+    protected void reduce(IntWritable key, Iterable<IntWritable> values,
+                          Context context)
+        throws IOException, InterruptedException {
+
+        int sum = 0;
+        for (IntWritable v : values) {
+            sum += v.get();
+        }
+
+        counts.put(key.get(), sum);
+        totalFollowers += sum;
+        totalOwners++;
+    }
+
+    @Override
+    protected void cleanup(Context context)
+        throws IOException, InterruptedException {
+
+        double avg = (double) totalFollowers / totalOwners;
+
+        for (Map.Entry<Integer, Integer> e : counts.entrySet()) {
+            if (e.getValue() > avg) {
+                String info =
+                    ownerInfo.getOrDefault(e.getKey(), "UNKNOWN,UNKNOWN");
+
+                context.write(
+                    new Text(e.getKey() + "," + info),
+                    new IntWritable(e.getValue())
+                );
+            }
+        }
+    }
+}
+
+
+    // Reducer (Simple)
+    /*public static class AboveAverageReducer
         extends Reducer<IntWritable, IntWritable, Text, IntWritable> {
         
         private Map<Integer, Integer> counts = new HashMap<>();
@@ -96,7 +181,7 @@ public class taskF {
                 }
             }
         }
-    }
+    }*/
 
     // Driver
     public static void main(String[] args) throws Exception {
@@ -111,6 +196,7 @@ public class taskF {
 
         // 3. both the mapper class and the reducer class
         job.setMapperClass(FollowerCountMapper.class);
+        job.setCombinerClass(SumCombiner.class);
         job.setReducerClass(AboveAverageReducer.class);
         job.setNumReduceTasks(1); // single reducer to compute global average
 

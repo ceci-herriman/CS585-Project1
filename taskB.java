@@ -129,6 +129,8 @@ public class taskB {
         @Override
         protected void reduce(IntWritable key, Iterable<Text> values,
             Context context) throws IOException, InterruptedException {
+            
+            //deafults
             String nick = "UNKNOWN";
             String title = "UNKNOWN";
             int count = 0;
@@ -175,6 +177,7 @@ public class taskB {
         // 3. both the mapper class and reducer class
         job1.setMapperClass(AccessCountMapper.class);
         job1.setReducerClass(AccessCountReducer.class);
+        job1.setCombinerClass(AccessCountReducer.class);
         job1.setNumReduceTasks(1);
 
         // 4. set up the output key value data type class
