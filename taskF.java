@@ -9,7 +9,8 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
-//those who have more followers than the average number of followers across all owners of a CircleNetPage
+// those who have more followers than the average number of followers across all
+// owners of a CircleNetPage
 
 /*
 scp -P 14226 C:/Users/op902/CS585-Project1/taskF.java ds503@localhost:~/
@@ -47,94 +48,80 @@ public class taskF {
     }
 
     // Combiner
-public static class SumCombiner
-    extends Reducer<IntWritable, IntWritable, IntWritable, IntWritable> {
-
-    @Override
-    protected void reduce(IntWritable key, Iterable<IntWritable> values,
-                          Context context)
-        throws IOException, InterruptedException {
-
-        int sum = 0;
-        for (IntWritable v : values) {
-            sum += v.get();
+    public static class SumCombiner
+        extends Reducer<IntWritable, IntWritable, IntWritable, IntWritable> {
+        @Override
+        protected void reduce(IntWritable key, Iterable<IntWritable> values,
+            Context context) throws IOException, InterruptedException {
+            int sum = 0;
+            for (IntWritable v : values) {
+                sum += v.get();
+            }
+            context.write(key, new IntWritable(sum));
         }
-        context.write(key, new IntWritable(sum));
     }
-}
 
     // Reducer (Optimized)
-    // Reducer: computes global average and outputs owners above average
-// Reducer: computes global average and outputs owners above average
-public static class AboveAverageReducer
-    extends Reducer<IntWritable, IntWritable, Text, IntWritable> {
+    public static class AboveAverageReducer
+        extends Reducer<IntWritable, IntWritable, Text, IntWritable> {
+        private Map<Integer, Integer> counts = new HashMap<>();
+        private int totalFollowers = 0;
+        private int totalOwners = 0;
+        private Map<Integer, String> ownerInfo = new HashMap<>();
 
-    private Map<Integer, Integer> counts = new HashMap<>();
-    private int totalFollowers = 0;
-    private int totalOwners = 0;
-    private Map<Integer, String> ownerInfo = new HashMap<>();
+        @Override
+        protected void setup(Context context)
+            throws IOException, InterruptedException {
+            // Load CircleNetPage.txt from Distributed Cache
+            BufferedReader br =
+                new BufferedReader(new FileReader("CircleNetPage.txt"));
 
-    @Override
-    protected void setup(Context context)
-        throws IOException, InterruptedException {
-
-        // Load CircleNetPage.txt from Distributed Cache
-        BufferedReader br =
-            new BufferedReader(new FileReader("CircleNetPage.txt"));
-
-        String line;
-        while ((line = br.readLine()) != null) {
-            String[] f = line.split(",");
-            if (f.length >= 3) {
-                ownerInfo.put(
-                    Integer.parseInt(f[0].trim()),
-                    f[1].trim() + "," + f[2].trim()
-                );
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] f = line.split(",");
+                if (f.length >= 3) {
+                    ownerInfo.put(Integer.parseInt(f[0].trim()),
+                        f[1].trim() + "," + f[2].trim());
+                }
             }
-        }
-        br.close();
-    }
-
-    @Override
-    protected void reduce(IntWritable key, Iterable<IntWritable> values,
-                          Context context)
-        throws IOException, InterruptedException {
-
-        int sum = 0;
-        for (IntWritable v : values) {
-            sum += v.get();
+            br.close();
         }
 
-        counts.put(key.get(), sum);
-        totalFollowers += sum;
-        totalOwners++;
-    }
+        @Override
+        protected void reduce(IntWritable key, Iterable<IntWritable> values,
+            Context context) throws IOException, InterruptedException {
+            int sum = 0;
+            for (IntWritable v : values) {
+                sum += v.get();
+            }
 
-    @Override
-    protected void cleanup(Context context)
-        throws IOException, InterruptedException {
+            counts.put(key.get(), sum);
+            totalFollowers += sum;
+            totalOwners++;
+        }
 
-        double avg = (double) totalFollowers / totalOwners;
+        @Override
+        protected void cleanup(Context context)
+            throws IOException, InterruptedException {
+            double avg = (double) totalFollowers / totalOwners;
 
-        for (Map.Entry<Integer, Integer> e : counts.entrySet()) {
-            if (e.getValue() > avg) {
-                String info =
-                    ownerInfo.getOrDefault(e.getKey(), "UNKNOWN,UNKNOWN");
+            for (Map.Entry<Integer, Integer> e : counts.entrySet()) {
+                if (e.getValue() > avg) {
+                    String info =
+                        ownerInfo.getOrDefault(e.getKey(), "UNKNOWN,UNKNOWN");
 
-                context.write(
-                    new Text(e.getKey() + "," + info),
-                    new IntWritable(e.getValue())
-                );
+                    context.write(new Text(e.getKey() + "," + info),
+                        new IntWritable(e.getValue()));
+                }
             }
         }
     }
-}
-
 
     // Reducer (Simple)
-    /*public static class AboveAverageReducer
+    /*
+    public static class AboveAverageReducer
         extends Reducer<IntWritable, IntWritable, Text, IntWritable> {
-        
+
         private Map<Integer, Integer> counts = new HashMap<>();
         private int totalFollowers = 0;
         private int totalOwners = 0;
@@ -142,7 +129,7 @@ public static class AboveAverageReducer
         @Override
         protected void reduce(IntWritable key, Iterable<IntWritable> values,
             Context context) throws IOException, InterruptedException {
-            
+
             int sum = 0;
             for (IntWritable v : values) {
                 sum += v.get();
@@ -159,7 +146,7 @@ public static class AboveAverageReducer
 
             Map<Integer, String> ownerInfo = new HashMap<>();
             BufferedReader br =
-                new BufferedReader(new FileReader("CircleNetPage.txt")); // CircleNetPage.txt has owner info
+                new BufferedReader(new FileReader("CircleNetPage.txt")); //CircleNetPage.txt has owner info
 
             String line;
             while ((line = br.readLine()) != null) {
@@ -185,7 +172,6 @@ public static class AboveAverageReducer
 
     // Driver
     public static void main(String[] args) throws Exception {
-        
         // 1. create a job object
         Configuration conf = new Configuration();
         Job job =
@@ -204,7 +190,8 @@ public static class AboveAverageReducer
         job.setMapOutputKeyClass(IntWritable.class);
         job.setMapOutputValueClass(IntWritable.class);
 
-        // 5. set up the final output key value data type class (It doesn't have to be the result of a reducer.)
+        // 5. set up the final output key value data type class (It doesn't have
+        // to be the result of a reducer.)
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
 
@@ -215,8 +202,12 @@ public static class AboveAverageReducer
             new Path("file:///home/ds503/shared_folder/project1/taskF/output"));
 
         // 7. submit the job
+        long startTime = System.nanoTime();
         boolean result = job.waitForCompletion(true);
-
+        long endTime = System.nanoTime();
+        double durationMilli = (double) (endTime - startTime) / 1000000.0;
+        System.out.println(
+            "Time to complete in milliseconds: " + durationMilli);
         System.exit(result ? 0 : 1);
     }
 }

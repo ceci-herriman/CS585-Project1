@@ -29,6 +29,7 @@ compile and run instrutions I used:
 javac -classpath $(hadoop classpath) taskB.java
 jar cf taskb.jar taskB*.class
 rm -rf ~/shared_folder/project1/taskB/output
+rm -rf ~/shared_folder/project1/taskB/temp
 hadoop jar taskb.jar taskB
 
 cat ~/shared_folder/project1/taskB/output/part-r-00000
@@ -235,7 +236,12 @@ public class taskB {
             new Path("file:///home/ds503/shared_folder/project1/taskB/output"));
 
         // 7. submit the job
+        long startTime = System.nanoTime();
         boolean result2 = job2.waitForCompletion(true);
+        long endTime = System.nanoTime();
+        double durationMilli = (double) (endTime - startTime) / 1000000.0;
+        System.out.println("Time to complete in milliseconds: " + durationMilli);
+        
         System.exit(result2 ? 0 : 1);
     }
 }
