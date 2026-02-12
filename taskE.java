@@ -31,26 +31,26 @@ public class taskE {
 
 
     // Mapper class to map who accessed what page
-    public static class TaskEMapper extends Mapper<LongWritable, Text, Text, Text> {
-        private Text page = new Text();
+    public static class TaskEMapper extends Mapper<Text, Text, Text, IntArrayWritable> {
         private Text user = new Text();
+        private IntWritable page = new IntWritable();
         //private IntWritable[] outValue = new IntWritable[2]; // to hold page and count of 1 for each access
 
-        @Override
-        public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+
+        public void map(Text key, IntArrayWritable value, Context context) throws IOException, InterruptedException {
             String[] fields = value.toString().split(",");
             if (fields.length >= 3) {
                 try {
                     String userId = fields[0].trim();
-                    String pageId = fields[1].trim();
+                    Integer pageId = Integer.parseInt(fields[1]);
                     user.set(userId);
-                    page.set(pageId);
-                    //IntWritable[] temp = new IntWritable[2];
-                    //IntArrayWritable outValue = new IntArrayWritable(temp);
-                    //temp[0].set(pageId.get());
-                    //temp[1].set(1); // set count of 1 for each access
-                    //outValue.set(temp);
-                    context.write(user, page); // Emit (user, [page, 1]) for each page access
+                    //page.set(pageId);
+                    IntWritable[] temp = new IntWritable[2];
+                    IntArrayWritable outValue = new IntArrayWritable(temp);
+                    temp[0].set(pageId);
+                    temp[1].set(1); // set count of 1 for each access
+                    outValue.set(temp);
+                    context.write(user, outValue); // Emit (user, [page, 1]) for each page access
                 } catch (NumberFormatException e) {
                     // skip bad lines
                 }
@@ -60,18 +60,17 @@ public class taskE {
 
     // Combiner class to sum up the counts for each page accessed by a user and count unique pages accessed
     public static class TaskECombiner
-     extends Reducer<Text, Text, Text, IntArrayWritable> {
-        private IntWritable outCount = new IntWritable();
-        private IntWritable outUnique = new IntWritable();
+     extends Reducer<Object, IntArrayWritable, Text, IntArrayWritable> {
 
-
-        protected void reduce(Text key, Iterable<Text> values, Reducer<Text, Text, Text, IntArrayWritable>.Context context) throws IOException, InterruptedException {
+        //@Override
+        protected void reduce(Text key, Iterable<IntArrayWritable> values, Reducer<Text, IntArrayWritable, Text, IntArrayWritable>.Context context) throws IOException, InterruptedException {
             int sum = 0; //for total # of accesses
-            Set<Text> uniquePages = new HashSet<>(); //to count unique pages accessed by the user
+            Set<IntWritable> uniquePages = new HashSet<>(); //to count unique pages accessed by the user
             // get the total count of page accesses for each page and count unique pages accessed by the user
-            for (Text val : values) {
-                sum++; // increment total accesses for each page access
-                uniquePages.add(val);
+            for (IntArrayWritable val : values) {
+                IntWritable[] value = val.get();
+                sum += value[1].get(); // increment total accesses for each page access
+                uniquePages.add(value[0]); // add page to the set of unique pages accessed
             }
             IntWritable accesses = new IntWritable(sum);
             IntWritable[] temp = new IntWritable[2];
@@ -103,7 +102,7 @@ public class taskE {
 
         // 4. set up the output key value data type class
         job.setMapOutputKeyClass(Text.class);
-        job.setMapOutputValueClass(Text.class);
+        job.setMapOutputValueClass(IntArrayWritable.class);
 
         // 5. set up the final output key value data type class (It doesn't have to be the result of a reducer.)
         job.setOutputKeyClass(Text.class);
@@ -117,6 +116,13 @@ public class taskE {
 
         // 7. submit the job
         boolean result = job.waitForCompletion(true);
+
+        long startTime = System.nanoTime();
+        boolean result = job.waitForCompletion(true);
+        long endTime = System.nanoTime();
+
+        double durationMilli = (double) (endTime - startTime) / 1000000.0;
+        System.out.println("Time to complete in milliseconds: " + durationMilli);
 
         System.exit(result ? 0 : 1);
 
