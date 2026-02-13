@@ -25,23 +25,13 @@ public class taskE {
     }
 
     @Override
-    public IntWritable[] get() {
-        Writable[] temp = super.get();
-        if (temp != null) {
-            int n = temp.length;
-            IntWritable[] items = new IntWritable[n];
-            for (int i = 0; i < temp.length; i++) {
-                items[i] = (IntWritable)temp[i];
-            }
-            return items;
-        } else {
-            return null;
-        }   
+    public Writable[] get() {
+        return super.get();
     }
 
     @Override
     public String toString() {
-        IntWritable[] values = get();
+        Writable[] values = get();
         return values[0].toString() + ", " + values[1].toString();
     }
 }
@@ -52,50 +42,45 @@ public class taskE {
         private Text user = new Text();
         private IntWritable page = new IntWritable();
         //private IntWritable[] outValue = new IntWritable[2]; // to hold page and count of 1 for each access
-
+        
         @Override
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-            context.getCounter("Mapper", "Input Records").increment(1);
-            String[] fields = value.toString().split(",");
-            if (fields.length >= 3) {
-                try {
-                    String userId = fields[0].trim();
-                    Integer pageId = Integer.parseInt(fields[1]);
-                    user.set(userId);
-                    //page.set(pageId);
-                    IntWritable[] temp = new IntWritable[]{new IntWritable(pageId), new IntWritable(1)}; // create an array to hold page and count of 1 for each access
-                    IntArrayWritable outValue = new IntArrayWritable(temp);
-                    
+            // ActivityLog: ActionId,ByWho,WhatPage,ActionType,ActionTime
+            String[] fields = value.toString().split(",", -1);
+            if (fields.length < 5) return;
 
-                    context.write(user, outValue); // Emit (user, [page, 1]) for each page access
-                } catch (NumberFormatException e) {
-                    // skip bad lines
-                }
-            }
+            String userId = fields[1].trim();
+            int pageId = Integer.parseInt(fields[2].trim());
+
+            user.set(userId);
+
+            IntWritable[] arr = new IntWritable[] { new IntWritable(pageId), new IntWritable(1) };
+            context.write(user, new IntArrayWritable(arr));
         }
-    }
+        }
 
     // Combiner class to sum up the counts for each page accessed by a user and count unique pages accessed
-    public static class TaskEReducer
-     extends Reducer<Text, IntArrayWritable, Text, IntArrayWritable> {
+        public static class TaskEReducer extends Reducer<Text, IntArrayWritable, Text, IntArrayWritable> {
 
-        //@Override
-        protected void reduce(Text key, Iterable<IntArrayWritable> values, Context context) throws IOException, InterruptedException {
-            int sum = 0; //for total # of accesses
-            Set<IntWritable> uniquePages = new HashSet<>(); //to count unique pages accessed by the user
-            // get the total count of page accesses for each page and count unique pages accessed by the user
-            for (IntArrayWritable val : values) {
-                IntWritable[] value = val.get();
-                sum += value[1].get(); // increment total accesses for each page access
-                uniquePages.add(value[0]); // add page to the set of unique pages accessed
+        @Override
+        protected void reduce(Text key, Iterable<IntArrayWritable> values, Context context)
+            throws IOException, InterruptedException {
+
+            int total = 0;
+            Set<Integer> distinct = new HashSet<>();
+
+            for (IntArrayWritable v : values) {
+            Writable[] w = v.get(); // IntArrayWritable returns IntWritable[]
+            int page = ((IntWritable) w[0]).get();
+            int cnt = ((IntWritable) w[1]).get();
+            total += cnt;
+            distinct.add(page);
             }
-            IntWritable accesses = new IntWritable(sum);
-            IntWritable[] temp = new IntWritable[] {new IntWritable(accesses.get()), new IntWritable(uniquePages.size())}; // create an array to hold total accesses and unique pages accessed
-            
 
-            context.write(key, new IntArrayWritable(temp)); // Emit (user, total accesses, unique pages accessed)
+            IntWritable[] out = new IntWritable[] { new IntWritable(total), new IntWritable(distinct.size()) };
+            context.write(key, new IntArrayWritable(out));
         }
-    }
+        }
 
     // Driver
     public static void main(String[] args) throws Exception {
@@ -125,7 +110,7 @@ public class taskE {
 
         // 6. Specify the input and output path
         FileInputFormat.setInputPaths(
-            job, new Path("file:///home/ds503/Follows.txt"));
+            job, new Path("file:///home/ds503/ActivityLog.txt"));
         FileOutputFormat.setOutputPath(job,
             new Path("file:///home/ds503/shared_folder/project1/taskE/output"));
 
