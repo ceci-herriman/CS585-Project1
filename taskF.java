@@ -170,44 +170,4 @@ public class taskF {
         }
     }*/
 
-    // Driver
-    public static void main(String[] args) throws Exception {
-        // 1. create a job object
-        Configuration conf = new Configuration();
-        Job job =
-            Job.getInstance(conf, "CircleNet Owners Above Average Followers");
-
-        // 2. map the class
-        job.setJarByClass(taskF.class);
-
-        // 3. both the mapper class and the reducer class
-        job.setMapperClass(FollowerCountMapper.class);
-        job.setCombinerClass(SumCombiner.class);
-        job.setReducerClass(AboveAverageReducer.class);
-        job.setNumReduceTasks(1); // single reducer to compute global average
-
-        // 4. set up the output key value data type class
-        job.setMapOutputKeyClass(IntWritable.class);
-        job.setMapOutputValueClass(IntWritable.class);
-
-        // 5. set up the final output key value data type class (It doesn't have
-        // to be the result of a reducer.)
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(IntWritable.class);
-
-        // 6. Specify the input and output path
-        FileInputFormat.setInputPaths(
-            job, new Path("file:///home/ds503/Follows.txt"));
-        FileOutputFormat.setOutputPath(job,
-            new Path("file:///home/ds503/shared_folder/project1/taskF/output"));
-
-        // 7. submit the job
-        long startTime = System.nanoTime();
-        boolean result = job.waitForCompletion(true);
-        long endTime = System.nanoTime();
-        double durationMilli = (double) (endTime - startTime) / 1000000.0;
-        System.out.println(
-            "Time to complete in milliseconds: " + durationMilli);
-        System.exit(result ? 0 : 1);
-    }
-}
+    
